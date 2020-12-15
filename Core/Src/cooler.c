@@ -1,12 +1,13 @@
 /*
- * co2_cylinder.c
+ * cooler.c
  *
  *  Created on: Nov 17, 2020
  *      Author: johan
  */
 
+
 /* Includes ------------------------------------------------------------------*/
-#include "co2_cylinder.h"
+#include "cooler.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -17,16 +18,30 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t  cooler_temperature;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
 
 /**
- * @brief Verifica se o cilindro de co2 esta vazio
+ * @brief Configura a terpertura do cooler
  *
- * @retval uint8_t Se o cilindro estiver vazio retorna 1 senao retorna 0
+ * @param temperature
  */
-uint8_t co2_cylinder_empty() { return !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1); }
+void set_cooler_temperture(uint8_t temperature) {
+
+    // control = erro * kp
+    uint16_t control = (cooler_temperature - temperature) * K_P_COOLER;
+
+    if (control < 0)
+        control = 0;
+    else if (control > MAX_VALUE_COOLER)
+        control = MAX_VALUE_COOLER;
+
+    //    TIM1->CCR2 = MAX_DUTY_CYCLE_VALUE;
+    TIM1->CCR2 = control;
+}
+
+
 
 /* External variables --------------------------------------------------------*/

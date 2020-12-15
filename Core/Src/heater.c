@@ -1,12 +1,13 @@
 /*
- * co2_cylinder.c
+ * heater.c
  *
  *  Created on: Nov 17, 2020
  *      Author: johan
  */
 
+
 /* Includes ------------------------------------------------------------------*/
-#include "co2_cylinder.h"
+#include "heater.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -17,16 +18,28 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t heater_temperature;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
 
 /**
- * @brief Verifica se o cilindro de co2 esta vazio
+ * @brief Configura a temperatura do aquecedor
  *
- * @retval uint8_t Se o cilindro estiver vazio retorna 1 senao retorna 0
+ * @param temperature
  */
-uint8_t co2_cylinder_empty() { return !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1); }
+void set_heater_temperture(uint8_t temperature) {
+
+    // control = erro * kp
+    uint16_t control = (temperature - heater_temperature) * K_P_HEATER;
+
+    if (control < 0)
+        control = 0;
+    else if (control > MAX_VALUE_HEATER)
+        control = MAX_VALUE_HEATER;
+
+    //    TIM1->CCR3 = MAX_DUTY_CYCLE_VALUE;
+    TIM1->CCR3 = control;
+}
 
 /* External variables --------------------------------------------------------*/

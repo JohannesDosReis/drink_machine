@@ -28,6 +28,8 @@
 #include "optical_reader.h"
 #include "temperature_sensors.h"
 #include "water_filter.h"
+#include "heater.h"
+#include "cooler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,11 +49,8 @@ typedef struct {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define K_P_HEATER 60
-#define K_P_COOLER 10
+
 #define MAX_DUTY_CYCLE_VALUE 1120
-#define MAX_VALUE_COOLER 112
-#define MAX_VALUE_HEATER 1120
 #define CONTROL_TIME 50
 #define ASCENDING_RAMP 200
 #define DESCENDING_RAMP 250
@@ -129,8 +128,6 @@ static void MX_TIM1_Init(void);
 
 void show_display(uint8_t view);
 void prepare_drink(uint8_t index);
-void set_cooler_temperture(uint8_t temperature);
-void set_heater_temperture(uint8_t temperature);
 
 /* USER CODE END PFP */
 
@@ -776,44 +773,6 @@ void prepare_drink(uint8_t index) {
             //            TIM1->CCR1 = MAX_DUTY_CYCLE_VALUE;
         }
     }
-}
-
-/**
- * @brief Configura a terpertura do cooler
- *
- * @param temperature
- */
-void set_cooler_temperture(uint8_t temperature) {
-
-    // control = erro * kp
-    uint16_t control = (cooler_temperature - temperature) * K_P_COOLER;
-
-    if (control < 0)
-        control = 0;
-    else if (control > MAX_VALUE_COOLER)
-        control = MAX_VALUE_COOLER;
-
-    //    TIM1->CCR2 = MAX_DUTY_CYCLE_VALUE;
-    TIM1->CCR2 = control;
-}
-
-/**
- * @brief Configura a temperatura do aquecedor
- *
- * @param temperature
- */
-void set_heater_temperture(uint8_t temperature) {
-
-    // control = erro * kp
-    uint16_t control = (temperature - heater_temperature) * K_P_HEATER;
-
-    if (control < 0)
-        control = 0;
-    else if (control > MAX_VALUE_HEATER)
-        control = MAX_VALUE_HEATER;
-
-    //    TIM1->CCR3 = MAX_DUTY_CYCLE_VALUE;
-    TIM1->CCR3 = control;
 }
 
 /* USER CODE END 4 */
