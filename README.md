@@ -186,7 +186,7 @@ Quando uma capsula é confirmada se a bebida precisa ser resfriada ou aquecida u
 
 
 Após a temperatura ser atingido uma mensagem indicado o preparo é apresentada
-![picture 17](assets/preparando.jpg)  
+![picture 17](assets/preparando.jpg)
 > Figura 17 - Preparando
 
 
