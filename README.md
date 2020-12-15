@@ -11,7 +11,7 @@ O diagrama de blocos do sistema é apresentado na figura 1.
 
 ![picture 2](assets/diagram.png)  
 
-Figura 1 - Diagrama de Blocos do Sistema
+> Figura 1 - Diagrama de Blocos do Sistema
 
 #### Descrição:
 - P1 - Pressostato de filtro de água saturado, contato NF, abre se filtro saturado.
@@ -52,6 +52,7 @@ Figura 1 - Diagrama de Blocos do Sistema
 O controlador utilizado será do tipo Proporcional, neste controlador o sinal de erro, diferença entre o sinal de referência e o sinal de realimentação, é multiplicado pelo ganho proporcional (Kp) e aplicado a saída. 
 
 ![picture 3](assets/controler.png)  
+> Figura 2 - Controlador proporcional
 
 
 A implementação do controlador deverá levar em conta os limites físicos das saídas (Saturação).
@@ -69,7 +70,7 @@ S: Entrar no menu, confirmar alteração.
 
 
 ![picture 1](assets/botoes.png)  
-
+> Figura 3 - Botões
 
 Quando uma cápsula é inserida o display deve mudar automaticamente e mostrar o tipo de cápsula e uma mensagem para iniciar o processo. Caso o usuário confirme o ínicio, a máquina deverá mostrar o status atual, por exemplo: Aquecendo água, temperatura atual, temperatura alvo, misturando, final de processo... 
 
@@ -94,7 +95,7 @@ Cada aluno deverá entregar:
   - Fotos da montagem prática
 - Durante a apresentação será solicitado a inserção de uma nova cápsula com parâmetros fornecidos pelo professor.
 
-Recomendações para o Firmware:
+#### Recomendações para o Firmware:
 - Divida o código em 'pedaços' que possam ser testados separadamente.
 - Fique atento às questões de hardware (pinos PWM, Analógicos, Digitais...).
 - Modularizar o código (dividir em arquivos .h e .c)
@@ -103,3 +104,90 @@ Recomendações para o Firmware:
 - Utilize constantes na criação das telas para o display.
 - Processe uma entrada do teclado somente quando necessário ou escolha uma taxa de atualização coerente.
 - Utilize estruturas para a implementação das receitas das cápsulas.
+
+
+### Resultados
+#### Montagem 
+
+O circuito da figura 4 foi moontado para simular uma maquina de bebidas, o circuito é controlado por um microcontrolador SMT32F103C8T6  
+
+![picture 4](./assets/montagem.jpg)
+> Figura 4 - Montagem para simulação 
+
+Para a simulação das saídas foi utilizado um display de 7 segmentos em que cada segmento apresentava uma saída, sendo elas:
+
+![picture 5](./assets/7segmentos.png)
+> Figura 5 - Display 7 segmentos
+
+A - Bomba de alimentação de água (digital)
+B - Válvula de alimentação do Co2 (digital)
+C - Aquecedor resistivo (PWM)
+D - Válvula de para alimentação de água quente (digital)
+E - Válvula de para alimentação de água gelada (digital)
+F - Válvula de para alimentação de água natural (digital)
+G - Compressor de refrigeração (PWM)
+DP - Heart beat (digital)
+
+#### Menus de navegação
+
+Para o cotrole foram utilizados 4 botões.
+
+![picture 6](assets/botoes_montados.jpg)  
+> Figura 6 - Botões representando controles
+
+Da esquerda para a direita a funções dos botões são as seguintes
+
+1. Cancelar
+2. Alterar temperatura da agua quando capsual  for colocada
+3. Alterar temperatura da agua quando capsual 1 for colocada
+4.  Confirmar e começar preparo de uma bebida
+
+A tela inicial mostra a hora minutos e segundos 
+
+![picture 7](assets/hora.jpg)  
+> Figura 7 - Hora atual
+
+De acordo com o corresponte codigo binário uma tela com do nome da bebida que será apresentada
+
+![picture 8](assets/agua_gelada.jpg)  
+> Figura 8 - Àgua gelada
+
+![picture 9](assets/agua_natural.jpg)  
+> Figura 9 - Agua natural
+
+![picture 10](assets/refrigerante.jpg)  
+> Figura 10 - Refrigerante
+
+
+Caso haja algum impessilho para que a bebida seja preparada uma mensagem é mostrada na tela
+
+![picture 11](assets/co2_vazio.jpg)  
+> Figura 11 - Cilindro de Co2 vazio
+
+![picture 12](assets/saturado.jpg)  
+> Figura 12 - Filtro de água saturado
+
+Na tela inicial sem nenhuma capsula inserida essas mensagem tambem aparecerem porem de outra forma
+
+![picture 13](assets/aguahora.jpg)  
+> Figura 13 - Filtro de água saturado tela inicial
+
+![picture 14](assets/co2hora.jpg)  
+> Figura 14 - Cilindro de Co2 vazio tela inicial
+
+![picture 15](assets/tudohora.jpg)  
+> Figura 15 - Filtro de água saturado e clindro de Co2 vazio tela inicial
+
+
+Quando uma capsula é confirmada se a bebida precisa ser resfriada ou aquecida uma tela é apresentada mostrando a bebeda que está sendo processada, a operação que está sendo executada, por exemplo aquecendo ou resfriando e a temperatura do liquido durante a operação 
+
+![picture 16](assets/resfriando.jpg)  
+> Figura 16 - Resfriando
+
+
+Após a temperatura ser atingido uma mensagem indicado o preparo é apresentada
+![picture 17](assets/preparando.jpg)  
+> Figura 17 - Preparando
+
+
+Após o temino do preparo a tela o sistema volta para a tela inicial

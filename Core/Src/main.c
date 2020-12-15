@@ -88,19 +88,19 @@ drink_t drinks[9] = {
     {.temperature = 15,
      .liquid_time = 3000,
      .co2_time = 0,
-     .description = "   agua gelada  "}, /* agua gelada */
+     .description = "   água gelada  "}, /* agua gelada */
     {.temperature = 0,
      .liquid_time = 3000,
      .co2_time = 0,
-     .description = "  agua natural  "}, /* agua natural */
+     .description = "  água natural  "}, /* agua natural */
     {.temperature = 60,
      .liquid_time = 3000,
      .co2_time = 0,
-     .description = "   agua quente  "}, /* agua quente */
+     .description = "   água quente  "}, /* agua quente */
     {.temperature = 15,
      .liquid_time = 3000,
      .co2_time = 1500,
-     .description = "  aguá com gás  "}, /* agua com gas */
+     .description = "  água com gás  "}, /* agua com gas */
     {.temperature = 20,
      .liquid_time = 2700,
      .co2_time = 0,
@@ -618,7 +618,7 @@ void show_display(uint8_t view) {
         case 3:
         case 4:
         case 5:
-            strcpy(lcd_text, drinks[view + 1].description);
+            strcpy(lcd_text[0], drinks[view + 1].description);
             sprintf(lcd_text[1], "%s", "   Confirmar ?  ");
             break;
 
@@ -634,17 +634,26 @@ void show_display(uint8_t view) {
             break;
 
         case 10:
-            strcpy(lcd_text, drinks[view + 1].description);
+        	if (capsule_id == 1)
+        		strcpy(lcd_text[0], drinks[water_option].description);
+			else
+        		strcpy(lcd_text[0], drinks[capsule_id + 1].description);
             sprintf(lcd_text[1], " resfriando t=%02d ", cooler_temperature);
             break;
 
         case 11:
-            strcpy(lcd_text, drinks[view + 1].description);
+        	if (capsule_id == 1)
+				strcpy(lcd_text[0], drinks[water_option].description);
+			else
+				strcpy(lcd_text[0], drinks[capsule_id + 1].description);
             sprintf(lcd_text[1], "   preparando   ");
             break;
 
         case 12:
-            strcpy(lcd_text, drinks[view + 1].description);
+        	if (capsule_id == 1)
+				strcpy(lcd_text[0], drinks[water_option].description);
+			else
+				strcpy(lcd_text[0], drinks[capsule_id + 1].description);
             sprintf(lcd_text[1], " aquecendo t=%02d ", heater_temperature);
             break;
 
