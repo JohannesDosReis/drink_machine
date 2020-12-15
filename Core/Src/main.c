@@ -22,11 +22,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd_display.h"
-#include "keyboard.h"
-#include "optical_reader.h"
-#include "water_filter.h"
 #include "co2_cylinder.h"
+#include "keyboard.h"
+#include "lcd_display.h"
+#include "optical_reader.h"
+#include "temperature_sensors.h"
+#include "water_filter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,9 +46,7 @@ typedef struct {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUMBER_OF_CONVERSIONS 16
-#define CONVERSIONS_BY_CHANNEL 8
-#define SAMPLES_NUMBER 32
+
 #define K_P_HEATER 60
 #define K_P_COOLER 10
 #define MAX_DUTY_CYCLE_VALUE 1120
@@ -81,10 +80,10 @@ RTC_HandleTypeDef hrtc;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-uint8_t capsule_id, water_filter, co2_cylinder, adc_data_ready, warnings, water_option, preparing;
-uint32_t adc_data[NUMBER_OF_CONVERSIONS], dutyCycle;
+uint8_t capsule_id, water_filter, co2_cylinder, warnings, water_option, preparing;
+uint32_t dutyCycle;
 RTC_TimeTypeDef sTime;
-uint8_t heater_temperature, cooler_temperature;
+uint8_t heater_temperature, cooler_temperature, adc_data_ready;
 
 drink_t drinks[9] = {
     {.temperature = 15,
@@ -127,7 +126,7 @@ static void MX_ADC1_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-void read_temperature_sensors();
+
 void show_display(uint8_t view);
 void prepare_drink(uint8_t index);
 void set_cooler_temperture(uint8_t temperature);
@@ -147,7 +146,7 @@ void set_heater_temperture(uint8_t temperature);
 int main(void) {
     /* USER CODE BEGIN 1 */
     uint8_t key = 0, drink_id = 0;
-    uint32_t timer_heart;
+    uint32_t timer_heart = 0;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -288,10 +287,11 @@ int main(void) {
         } else {
             prepare_drink(drink_id);
         }
-        if (timer_heart < HAL_GetTick() + HEARTBEAT_TIME) {
+        if (timer_heart < HAL_GetTick()) {
             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
-            timer_heart = HAL_GetTick();
+            timer_heart = HAL_GetTick() + HEARTBEAT_TIME;
         }
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -588,11 +588,6 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
-
-
-
-
-
 /**
  * @brief Funcao de callback do dma
  *
@@ -600,38 +595,6 @@ static void MX_GPIO_Init(void) {
  *  @retval None
  */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { adc_data_ready = 1; }
-
-/**
- * @brief Le a temperatura dos sensores presentes no heater e no cooler
- *
- * @retval None
- */
-void read_temperature_sensors() {
-    static uint8_t data_samples = 0;
-    static uint32_t heater_adc_data = 0, cooler_adc_data = 0;
-    uint8_t i;
-
-    if (adc_data_ready) {
-        adc_data_ready = 0;
-
-        data_samples += CONVERSIONS_BY_CHANNEL;
-
-        for (i = 0; i < CONVERSIONS_BY_CHANNEL; i++) {
-            heater_adc_data += adc_data[i];
-            cooler_adc_data += adc_data[i + CONVERSIONS_BY_CHANNEL];
-        }
-
-        if (data_samples >= SAMPLES_NUMBER) {
-            heater_adc_data /= SAMPLES_NUMBER;
-            cooler_adc_data /= SAMPLES_NUMBER;
-
-            heater_temperature = ((heater_adc_data * 95) / 4095) + 5;
-            cooler_temperature = ((cooler_adc_data * 45) / 4095) + 5;
-
-            data_samples = heater_adc_data = cooler_adc_data = 0;
-        }
-    }
-}
 
 /**
  * @brief Mostra uma tela no display de acordo com o id
@@ -707,20 +670,18 @@ void show_display(uint8_t view) {
     lcd_sendText(lcd_text[1]);
 }
 
-
-
 /**
  * @brief Prepara a bebida
  *
  * @param index O index da bebida a ser preparada
  */
 void prepare_drink(uint8_t index) {
-    static uint32_t timer2, timer1 = 0, timer;
+    static uint32_t time0, time1, time2, time3, time4, timer1 = 0, timer;
     uint16_t duty_cycle = 0;
     static uint8_t valve;
     if (preparing) {
-        if (timer1 + CONTROL_TIME < HAL_GetTick()) {
-            timer1 = HAL_GetTick();
+        if (timer1 < HAL_GetTick()) {
+            timer1 = HAL_GetTick() + CONTROL_TIME;
             switch (water_option) {
                 case 0:
                     if (preparing == 1) show_display(10);
@@ -729,7 +690,11 @@ void prepare_drink(uint8_t index) {
                         preparing = 2;
                         valve = 0;
                         show_display(11);
-                        timer2 = HAL_GetTick();
+                        time0 = HAL_GetTick();
+                        time1 = time0 + ASCENDING_RAMP;
+                        time2 = time0 + drinks[index].liquid_time - DESCENDING_RAMP;
+                        time3 = time0 + drinks[index].liquid_time;
+                        time4 = time0 + drinks[index].co2_time;
                     }
                     break;
                 case 1:
@@ -737,7 +702,11 @@ void prepare_drink(uint8_t index) {
                         preparing = 2;
                         valve = 1;
                         show_display(11);
-                        timer2 = HAL_GetTick();
+                        time0 = HAL_GetTick();
+                        time1 = time0 + ASCENDING_RAMP;
+                        time2 = time0 + drinks[index].liquid_time - DESCENDING_RAMP;
+                        time3 = time0 + drinks[index].liquid_time;
+                        time4 = time0 + drinks[index].co2_time;
                     }
 
                     break;
@@ -748,56 +717,58 @@ void prepare_drink(uint8_t index) {
                         preparing = 2;
                         valve = 2;
                         show_display(11);
-                        timer2 = HAL_GetTick();
+                        time0 = HAL_GetTick();
+                        time1 = time0 + ASCENDING_RAMP;
+                        time2 = time0 + drinks[index].liquid_time - DESCENDING_RAMP;
+                        time3 = time0 + drinks[index].liquid_time;
+                        time4 = time0 + drinks[index].co2_time;
                     }
                     break;
             }
         }
 
         if (preparing == 2) {
-            timer = HAL_GetTick() - timer2;
+            timer = HAL_GetTick();
 
             // controle valvula co2
-            if (timer < drinks[index].co2_time)
+            if (timer < time4)
                 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
             else
                 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
             switch (valve) {
                 case 0:
-                    if (timer < drinks[index].liquid_time)
+                    if (timer < time3)
                         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
                     else
                         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
                     break;
                 case 1:
-                    if (timer < drinks[index].liquid_time)
+                    if (timer < time3)
                         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
                     else
                         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
                     break;
                 case 2:
-                    if (timer < drinks[index].liquid_time)
+                    if (timer < time3)
                         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
                     else
                         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
                     break;
             }
             //  rampa de subida
-            if (timer < ASCENDING_RAMP)
+            if (timer < time1)
                 //            	duty_cycle = MAX_DUTY_CYCLE_VALUE / 2;
-                duty_cycle = (timer)*MAX_DUTY_CYCLE_VALUE / ASCENDING_RAMP;
+                duty_cycle = (timer - time0) * MAX_DUTY_CYCLE_VALUE / ASCENDING_RAMP;
             // rampa de descida
-            else if (timer < (drinks[index].liquid_time - DESCENDING_RAMP))
+            else if (timer < time2)
                 //                duty_cycle = MAX_DUTY_CYCLE_VALUE;
                 duty_cycle = MAX_DUTY_CYCLE_VALUE;
             // rampa de descida
-            else if (timer < drinks[index].liquid_time)
+            else if (timer < time3)
                 //                duty_cycle = MAX_DUTY_CYCLE_VALUE / 2;
-                duty_cycle = (timer - (drinks[index].liquid_time - DESCENDING_RAMP)) *
-                             MAX_DUTY_CYCLE_VALUE / DESCENDING_RAMP;
+                duty_cycle = (timer - time2) * MAX_DUTY_CYCLE_VALUE / DESCENDING_RAMP;
             else {
-                capsule_id = preparing = duty_cycle = 0;
-                TIM1->CCR1 = TIM1->CCR2 = TIM1->CCR3 = 0;
+                TIM1->CCR1 = TIM1->CCR2 = TIM1->CCR3 = capsule_id = preparing = 0;
                 return;
             }
 
