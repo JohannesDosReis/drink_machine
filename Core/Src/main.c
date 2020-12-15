@@ -39,9 +39,9 @@
 /* USER CODE BEGIN PTD */
 
 typedef struct {
-    uint8_t temperature;
     uint16_t liquid_time;
     uint16_t co2_time;
+    uint8_t temperature;
     char *description;
 } drink_t;
 /* USER CODE END PTD */
@@ -79,9 +79,9 @@ RTC_HandleTypeDef hrtc;
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
-uint8_t capsule_id, water_filter, co2_cylinder, warnings, water_option, preparing;
-uint32_t dutyCycle;
 RTC_TimeTypeDef sTime;
+uint32_t dutyCycle;
+uint8_t capsule_id, water_filter, co2_cylinder, warnings, water_option, preparing;
 uint8_t heater_temperature, cooler_temperature, adc_data_ready;
 
 drink_t drinks[9] = {
@@ -142,8 +142,8 @@ void prepare_drink(uint8_t index);
  */
 int main(void) {
     /* USER CODE BEGIN 1 */
-    uint8_t key = 0, drink_id = 0;
     uint32_t timer_heart = 0;
+    uint8_t key = 0, drink_id = 0;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -604,11 +604,11 @@ void show_display(uint8_t view) {
             // escolha de liquido
         case 1:
 
-            sprintf(lcd_text[0], "      água      ");
+        	strcpy(lcd_text[0], "      água      ");
             switch (water_option) {
-                case 0: sprintf(lcd_text[1], " <   gelada   > "); break;
-                case 1: sprintf(lcd_text[1], " <   natural  > "); break;
-                case 2: sprintf(lcd_text[1], " <   quente   > "); break;
+                case 0: strcpy(lcd_text[1], " <   gelada   > "); break;
+                case 1: strcpy(lcd_text[1], " <   natural  > "); break;
+                case 2: strcpy(lcd_text[1], " <   quente   > "); break;
 
                 default: sprintf(lcd_text[1], " <   natural  > "); break;
             }
@@ -619,18 +619,18 @@ void show_display(uint8_t view) {
         case 4:
         case 5:
             strcpy(lcd_text[0], drinks[view + 1].description);
-            sprintf(lcd_text[1], "%s", "   Confirmar ?  ");
+            strcpy(lcd_text[1], "   Confirmar ?  ");
             break;
 
         // avisos
         case 8:
-            sprintf(lcd_text[0], " filtro de agua ");
-            sprintf(lcd_text[1], "    saturado    ");
+        	strcpy(lcd_text[0], " filtro de agua ");
+        	strcpy(lcd_text[1], "    saturado    ");
             break;
 
         case 9:
-            sprintf(lcd_text[0], "  cilindro Co2  ");
-            sprintf(lcd_text[1], "     vazio      ");
+        	strcpy(lcd_text[0], "  cilindro Co2  ");
+        	strcpy(lcd_text[1], "     vazio      ");
             break;
 
         case 10:
@@ -638,7 +638,7 @@ void show_display(uint8_t view) {
         		strcpy(lcd_text[0], drinks[water_option].description);
 			else
         		strcpy(lcd_text[0], drinks[capsule_id + 1].description);
-            sprintf(lcd_text[1], " resfriando t=%02d ", cooler_temperature);
+			sprintf(lcd_text[1], " resfriando t=%02d ", cooler_temperature);
             break;
 
         case 11:
@@ -646,7 +646,7 @@ void show_display(uint8_t view) {
 				strcpy(lcd_text[0], drinks[water_option].description);
 			else
 				strcpy(lcd_text[0], drinks[capsule_id + 1].description);
-            sprintf(lcd_text[1], "   preparando   ");
+			strcpy(lcd_text[1], "   preparando   ");
             break;
 
         case 12:
@@ -662,11 +662,11 @@ void show_display(uint8_t view) {
             sprintf(lcd_text[0], " hora: %02d:%02d:%02d ", sTime.Hours, sTime.Minutes,
                     sTime.Seconds);
             switch (warnings) {
-                case 3: sprintf(lcd_text[1], " !água!   !co2! "); break;
-                case 2: sprintf(lcd_text[1], "     !co2!      "); break;
-                case 1: sprintf(lcd_text[1], "     !água!     "); break;
+                case 3: strcpy(lcd_text[1], " !água!   !co2! "); break;
+                case 2: strcpy(lcd_text[1], "     !co2!      "); break;
+                case 1: strcpy(lcd_text[1], "     !água!     "); break;
 
-                default: sprintf(lcd_text[1], "                "); break;
+                default: strcpy(lcd_text[1], "                "); break;
             }
             break;
     }
@@ -765,7 +765,7 @@ void prepare_drink(uint8_t index) {
             if (timer < time1)
                 //            	duty_cycle = MAX_DUTY_CYCLE_VALUE / 2;
                 duty_cycle = (timer - time0) * MAX_DUTY_CYCLE_VALUE / ASCENDING_RAMP;
-            // rampa de descida
+            //
             else if (timer < time2)
                 //                duty_cycle = MAX_DUTY_CYCLE_VALUE;
                 duty_cycle = MAX_DUTY_CYCLE_VALUE;

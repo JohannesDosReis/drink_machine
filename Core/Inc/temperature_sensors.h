@@ -25,8 +25,8 @@
 #define SAMPLES_NUMBER 32
 
 /* Exported constants --------------------------------------------------------*/
-extern uint8_t heater_temperature, cooler_temperature, adc_data_ready;
 extern uint32_t adc_data[NUMBER_OF_CONVERSIONS];
+extern uint8_t heater_temperature, cooler_temperature, adc_data_ready;
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions prototypes ---------------------------------------------*/
